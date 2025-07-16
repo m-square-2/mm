@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zeichenseite</title>
+  <style>
+    body { text-align: center; font-family: sans-serif; }
+    canvas { border: 1px solid black; cursor: crosshair; }
+    .controls { margin: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Zeichenseite</h1>
+  <div class="controls">
+  <button onclick="saveImage()">Speichern</button>
+  <label>Farbe: <input type="color" id="colorPicker" value="#000000"></label>
+  <label>Stiftdicke: <input type="range" id="sizePicker" min="1" max="50" value="5"></label>
+  <button onclick="toggleEraser()" id="eraserBtn">Radiergummi</button>
+  <button onclick="clearCanvas()">Leeren</button>
+  </div>
+  <canvas id="drawingCanvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    const sizePicker = document.getElementById('sizePicker');
+    const eraserBtn = document.getElementById('eraserBtn');
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let eraserMode = false;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing) return;
+      ctx.strokeStyle = eraserMode ? '#ffffff' : colorPicker.value;
+      ctx.lineWidth = sizePicker.value;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    });
+
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseout', () => isDrawing = false);
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function toggleEraser() {
+      eraserMode = !eraserMode;
+      eraserBtn.textContent = eraserMode ? 'Stift' : 'Radiergummi';
+    }
+    function saveImage() {
+  const link = document.createElement('a');
+  link.download = 'zeichnung.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+  </script>
+</body>
+</html>
+

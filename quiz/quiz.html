@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mag ich das? – Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    #image-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    img {
+      width: 300px;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .buttons {
+      margin: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+    }
+    .correct {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .wrong {
+      background-color: #f44336;
+      color: white;
+    }
+    #nextBtn, #restartBtn {
+      margin-top: 20px;
+      background-color: #008CBA;
+      color: white;
+      display: none;
+    }
+    #score, #counter, #timer {
+      font-size: 20px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Mag ich das?</h1>
+  <div id="counter">Frage 1 von 10</div>
+  <div id="score">Punkte: 0</div>
+  <div id="timer">⏱️ Zeit: 10</div>
+  <div id="image-container">
+    <img id="quizImage" src="" alt="Quiz Bild">
+  </div>
+  <div class="buttons">
+    <button onclick="checkAnswer(true)">Ja</button>
+    <button onclick="checkAnswer(false)">Nein</button>
+  </div>
+  <p id="feedback"></p>
+  <button id="nextBtn" onclick="nextQuestion()">Weiter</button>
+  <button id="restartBtn" onclick="restartQuiz()">Neu starten</button>
+
+  <!-- ✅ Neue Sounds (nicht nervig!) -->
+<audio id="soundCorrect" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="soundWrong" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+<audio id="soundEnd" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg"></audio>
+
+  <script>
+    const quiz = [
+           { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Supreme_pizza.jpg/640px-Supreme_pizza.jpg", likes: true },
+      { image: "spinnat.png", likes: false },
+      { image: "sonniger tag im park.png", likes: true },
+      { image: "stau.png", likes: false },
+      { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Chocolate_%28blue_background%29.jpg/640px-Chocolate_%28blue_background%29.jpg", likes: true },
+      { image: "kakerlaken.png", likes: false },
+      { image: "katze.png" , likes: true },
+      { image: "kino.png" , likes: true },
+      { image: "krank sein.png" ,likes: false },
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 10;
+
+    function showQuestion() {
+      const current = quiz[currentQuestion];
+      document.getElementById("quizImage").src = current.image;
+      document.getElementById("quizImage").style.display = "block";
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("feedback").className = "";
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("restartBtn").style.display = "none";
+      document.querySelector(".buttons").style.display = "block";
+      document.getElementById("counter").textContent = `Frage ${currentQuestion + 1} von ${quiz.length}`;
+      document.getElementById("score").textContent = `Punkte: ${score}`;
+      resetTimer();
+    }
+
+    function checkAnswer(userSaysYes) {
+      clearInterval(timer);
+      const correct = quiz[currentQuestion].likes === userSaysYes;
+      const feedback = document.getElementById("feedback");
+
+      if (correct) {
+        feedback.textContent = "Richtig! ✅";
+        feedback.className = "correct";
+        score++;
+        document.getElementById("soundCorrect").play();
+      } else {
+        feedback.textContent = "Falsch! ❌";
+        feedback.className = "wrong";
+        document.getElementById("soundWrong").play();
+      }
+
+      document.getElementById("score").textContent = `Punkte: ${score}`;
+      document.getElementById("nextBtn").style.display = "inline-block";
+      document.querySelector(".buttons").style.display = "none";
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < quiz.length) {
+        showQuestion();
+      } else {
+        endQuiz();
+      }
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      showQuestion();
+    }
+
+    function endQuiz() {
+      document.getElementById("quizImage").style.display = "none";
+      document.querySelector(".buttons").style.display = "none";
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("counter").textContent = "";
+      document.getElementById("timer").textContent = "";
+      document.getElementById("restartBtn").style.display = "inline-block";
+
+      let emoji = "😐";
+      if (score === quiz.length) emoji = "🏆";
+      else if (score >= quiz.length * 0.7) emoji = "😄";
+      else if (score <= 3) emoji = "😢";
+
+      document.getElementById("feedback").textContent = `Quiz beendet! Du hast ${score} von ${quiz.length} Punkten. ${emoji}`;
+      document.getElementById("feedback").className = "";
+      document.getElementById("soundEnd").play();
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timeLeft = 10;
+      document.getElementById("timer").textContent = `⏱️ Zeit: ${timeLeft}`;
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = `⏱️ Zeit: ${timeLeft}`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          checkAnswer(null); // Zeit abgelaufen = falsch
+        }
+      }, 1000);
+    }
+
+    window.onload = showQuestion;
+  </script>
+
+</body>
+</html>
+
